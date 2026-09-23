@@ -81,3 +81,22 @@ export async function pollTransaction(
   }
   throw new Error("cancelled");
 }
+
+// A transaction that never reaches ACCEPTED can fail for two genuinely
+// different reasons, confirmed against a real transaction (a deliberate
+// duplicate register_asset() call on SolvencyOracle): a deterministic
+// contract-level rejection (assert failure) resolves straight to a
+// decided status with txExecutionResultName "FINISHED_WITH_ERROR" - every
+// validator agrees the call reverts, there's nothing to retry about it,
+// and the generic "validators couldn't reach a clear majority" copy is
+// actively misleading for it. Genuine consensus trouble (real
+// disagreement or timeouts) has no such field. This distinguishes them
+// rather than showing the same message for both.
+export function describeFailure(tx: any, rejectionHint: string): string {
+  const statusNum = String(tx.status);
+  if (tx?.txExecutionResultName === "FINISHED_WITH_ERROR") {
+    return `The contract rejected this call - ${rejectionHint}`;
+  }
+  const statusName = STATUS_NAMES[statusNum] ?? statusNum;
+  return STATUS_COPY[statusName] ?? `Not accepted (status: ${statusName}).`;
+}

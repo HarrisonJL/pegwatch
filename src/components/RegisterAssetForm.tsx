@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { CONTRACT_ADDRESS, getWriteClient } from "@/lib/genlayer";
 import { useWallet } from "@/lib/useWallet";
-import { pollTransaction, STATUS_COPY, STATUS_NAMES, type Progress } from "@/lib/pollTransaction";
+import { pollTransaction, STATUS_COPY, describeFailure, type Progress } from "@/lib/pollTransaction";
 import { Button, Field, inputClass } from "@/components/ui";
 
 const MAX_URLS = 3;
@@ -74,8 +74,7 @@ export default function RegisterAssetForm({ onSettled }: { onSettled: () => void
       const tx = await pollTransaction(client, txHash, "ACCEPTED", setProgress, () => cancelledRef.current);
       const statusNum = String(tx.status);
       if (statusNum !== ACCEPTED) {
-        const statusName = STATUS_NAMES[statusNum] ?? statusNum;
-        setError(STATUS_COPY[statusName] ?? `Registration was not accepted (status: ${statusName}).`);
+        setError(describeFailure(tx, "is this asset ID already registered, or a URL not https://?"));
         setStage("idle");
         return;
       }

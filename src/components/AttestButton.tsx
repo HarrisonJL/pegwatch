@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { CONTRACT_ADDRESS, getWriteClient } from "@/lib/genlayer";
 import { useWallet } from "@/lib/useWallet";
-import { pollTransaction, STATUS_COPY, STATUS_NAMES, type Progress } from "@/lib/pollTransaction";
+import { pollTransaction, STATUS_COPY, describeFailure, type Progress } from "@/lib/pollTransaction";
 import { fetchSolvencyState, type Attestation } from "@/lib/useSolvencyState";
 import { resolveBoundAttestation } from "@/lib/bindAttestation";
 import { Button } from "@/components/ui";
@@ -46,8 +46,11 @@ export default function AttestButton({ assetId, onSettled }: { assetId: string; 
         // clean consensus more often than a pure-LLM call - surfacing
         // this as a normal, expected "try again" rather than a scary error
         // is the honest thing to do, not a cover-up of a flaky feature.
-        const statusName = STATUS_NAMES[statusNum] ?? statusNum;
-        setError(STATUS_COPY[statusName] ?? `Attestation was not accepted (status: ${statusName}).`);
+        // describeFailure separately distinguishes a genuine contract-level
+        // rejection (confirmed live: a deterministic assert failure
+        // resolves to a decided status with txExecutionResultName
+        // "FINISHED_WITH_ERROR", not the generic consensus-trouble path).
+        setError(describeFailure(tx, "this asset may no longer exist."));
         setNeedsRetry(true);
         setStage("idle");
         return;

@@ -19,17 +19,23 @@ export default function AssetCard({
 
   useEffect(() => {
     let cancelled = false;
+    let attempt = 0;
     // Asset metadata is immutable once registered, so a failed fetch (e.g.
-    // Studio Next's "Server busy: all N execution slots occupied" under
-    // load, confirmed live) just needs a retry, not a permanent fallback to
-    // the bare asset_id.
+    // Studio Next's "Server busy" or its 500-requests/hour rate limit, both
+    // confirmed live) just needs a retry, not a permanent fallback to the
+    // bare asset_id. Backs off (5s, 10s, 20s... capped at 60s) rather than
+    // a fixed interval, since a real hourly cap only gets worse if every
+    // failed card retries on the same tight loop at once.
     function load() {
       fetchAsset(assetId)
         .then((a) => {
           if (!cancelled) setAsset(a);
         })
         .catch(() => {
-          if (!cancelled) setTimeout(load, 5000);
+          if (cancelled) return;
+          const delay = Math.min(5000 * 2 ** attempt, 60000);
+          attempt += 1;
+          setTimeout(load, delay);
         });
     }
     load();

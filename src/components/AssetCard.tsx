@@ -40,7 +40,8 @@ export default function AssetCard({
 
   const latest = attestations[0];
   const latestVerdict: Verdict = latest?.verdict ?? "NONE";
-  const sourceCount = asset ? (JSON.parse(asset.source_urls_json) as string[]).length : 0;
+  const sourceUrls = asset ? (JSON.parse(asset.source_urls_json) as string[]) : [];
+  const sourceCount = sourceUrls.length;
 
   return (
     <Card>
@@ -51,11 +52,26 @@ export default function AssetCard({
             <span className="mono text-xs text-[color:var(--muted)]">{assetId}</span>
           </div>
           {asset && (
-            <p className="mt-1 text-xs text-[color:var(--muted)]">
-              Requires ≥{formatCoverage(asset.threshold_bps)} coverage · {sourceCount} independent source
-              {sourceCount === 1 ? "" : "s"} cross-checked
-              {asset.standard && ` · ${asset.standard}`}
-            </p>
+            <>
+              <p className="mt-1 text-xs text-[color:var(--muted)]">
+                Requires ≥{formatCoverage(asset.threshold_bps)} coverage · {sourceCount} independent source
+                {sourceCount === 1 ? "" : "s"} cross-checked
+                {asset.standard && ` · ${asset.standard}`}
+              </p>
+              <p className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-xs">
+                {sourceUrls.map((url, i) => (
+                  <a
+                    key={url}
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[color:var(--accent)] hover:underline"
+                  >
+                    Source{sourceUrls.length > 1 ? ` ${i + 1}` : ""} ↗
+                  </a>
+                ))}
+              </p>
+            </>
           )}
         </div>
         <VerdictBadge verdict={latestVerdict} />

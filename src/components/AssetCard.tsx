@@ -18,11 +18,29 @@ export default function AssetCard({
   const [asset, setAsset] = useState<Asset | null>(null);
 
   useEffect(() => {
-    fetchAsset(assetId).then(setAsset).catch(() => setAsset(null));
+    let cancelled = false;
+    // Asset metadata is immutable once registered, so a failed fetch (e.g.
+    // Studio Next's "Server busy: all N execution slots occupied" under
+    // load, confirmed live) just needs a retry, not a permanent fallback to
+    // the bare asset_id.
+    function load() {
+      fetchAsset(assetId)
+        .then((a) => {
+          if (!cancelled) setAsset(a);
+        })
+        .catch(() => {
+          if (!cancelled) setTimeout(load, 5000);
+        });
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, [assetId]);
 
   const latest = attestations[0];
   const latestVerdict: Verdict = latest?.verdict ?? "NONE";
+  const sourceCount = asset ? (JSON.parse(asset.source_urls_json) as string[]).length : 0;
 
   return (
     <Card>
@@ -34,7 +52,8 @@ export default function AssetCard({
           </div>
           {asset && (
             <p className="mt-1 text-xs text-[color:var(--muted)]">
-              Requires ≥{formatCoverage(asset.threshold_bps)} coverage
+              Requires ≥{formatCoverage(asset.threshold_bps)} coverage · {sourceCount} independent source
+              {sourceCount === 1 ? "" : "s"} cross-checked
               {asset.standard && ` · ${asset.standard}`}
             </p>
           )}

@@ -56,7 +56,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </header>
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">{children}</main>
         <footer className="border-t border-[color:var(--surface-border)] px-4 py-4 text-center text-xs text-[color:var(--muted)] sm:px-6">
-          GenLayer Bradbury testnet only &middot; no real value &middot; every verdict is agreed on by an independent validator committee reading public pages live, not one party&apos;s claim
+          GenLayer Studio Next testnet only &middot; no real value &middot; every verdict is agreed on by an independent validator committee reading public pages live, not one party&apos;s claim
         </footer>
       </body>
     </html>

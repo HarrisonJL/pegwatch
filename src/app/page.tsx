@@ -19,12 +19,28 @@ export default function Home() {
   const { state, error, loading, refresh } = useSolvencyState();
   const [assets, setAssets] = useState<AssetSummary[]>([]);
   const [attestations, setAttestations] = useState<Attestation[]>([]);
+  // Distinct from the top-level `error` (get_state failing): this is
+  // list_assets/get_attestations failing, e.g. Studio Next's "Server busy:
+  // all 8 execution slots occupied" under load. Confirmed live: without
+  // this, a single transient failure here left the page showing "No assets
+  // registered yet" underneath a correct, non-zero asset count from
+  // get_state - genuinely wrong, not just an ugly error - and it wouldn't
+  // recover until asset_count/attestation_count next changed, since that's
+  // the only thing that re-triggers this fetch. Now it keeps the last good
+  // data on screen and retries itself rather than going blank.
+  const [dataError, setDataError] = useState<string | null>(null);
 
   const refreshData = useCallback(async () => {
     if (!isConfigured()) return;
-    const [a, att] = await Promise.all([fetchAssets(), fetchAttestations(0, 50)]);
-    setAssets(a);
-    setAttestations(att);
+    try {
+      const [a, att] = await Promise.all([fetchAssets(), fetchAttestations(0, 50)]);
+      setAssets(a);
+      setAttestations(att);
+      setDataError(null);
+    } catch (err) {
+      setDataError(err instanceof Error ? err.message : "Failed to load assets.");
+      setTimeout(refreshData, 5000);
+    }
   }, []);
 
   useEffect(() => {
@@ -67,6 +83,15 @@ export default function Home() {
         </Card>
       )}
 
+      {dataError && (
+        <Card>
+          <p className="text-sm text-red-400">
+            Couldn&apos;t refresh the asset list ({dataError}) - retrying automatically. Showing the last data
+            loaded successfully{assets.length === 0 ? " (none yet)" : ""}.
+          </p>
+        </Card>
+      )}
+
       <Card title="Register an asset">
         <RegisterAssetForm onSettled={refreshAll} />
       </Card>
@@ -74,7 +99,13 @@ export default function Home() {
       <div className="space-y-4">
         {assets.length === 0 ? (
           <Card>
-            <p className="text-sm text-[color:var(--muted)]">No assets registered yet.</p>
+            <p className="text-sm text-[color:var(--muted)]">
+              {dataError
+                ? "Still loading assets..."
+                : (state?.asset_count ?? 0) > 0
+                  ? "Loading assets..."
+                  : "No assets registered yet."}
+            </p>
           </Card>
         ) : (
           assets.map((a) => (

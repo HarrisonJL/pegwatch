@@ -38,20 +38,22 @@ export default function About() {
       <Card title="A real limitation, shown honestly, not hidden">
         <p className="text-sm leading-relaxed text-[color:var(--foreground)]">
           Every validator here has to fetch a live web page <em>and</em> run an LLM extraction within the same
-          consensus round - meaningfully heavier, in real-world latency, than a pure-LLM call. Confirmed live, not
-          theoretical: of the first two demo attestations, one reached clean 5/5 consensus immediately; the other
-          escalated through an appeal round that came back split (some validators timing out, others computing a
-          mismatched result) and needed a genuine retry before it committed - see{" "}
+          consensus round - meaningfully heavier, in real-world latency, than a pure-LLM call. On GenLayer
+          Studio Next (this deployment) every demo attestation so far has reached clean consensus on the first
+          try, in well under a minute. That wasn&apos;t true everywhere: an earlier deployment of this same
+          contract on GenLayer Bradbury genuinely needed a retry on one attestation, and separately hit a
+          transaction that stayed unresolved for hours - both documented, not hidden, in{" "}
           <a
             href="https://github.com/HarrisonJL/solvency-oracle/blob/main/CONTRACT.md"
             target="_blank"
             rel="noreferrer"
             className="text-[color:var(--accent)] hover:underline"
           >
-            the real transactions
+            CONTRACT.md
           </a>
-          . If you click &quot;Attest now&quot; and see a message about consensus not being reached, that&apos;s
-          this - not a broken app. Click &quot;Try again.&quot;
+          , which is part of why this deployment moved networks. If you click &quot;Attest now&quot; and still
+          see a message about consensus not being reached, that&apos;s this kind of thing, not a broken app -
+          click &quot;Try again.&quot;
         </p>
       </Card>
 

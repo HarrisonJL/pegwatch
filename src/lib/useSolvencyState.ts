@@ -51,7 +51,10 @@ export async function fetchSolvencyState(): Promise<SolvencyState> {
   })) as SolvencyState;
 }
 
-export function useSolvencyState(pollMs = 8000) {
+// Studio Next's public RPC caps at 30 requests/minute (confirmed live) -
+// shared across every visitor's polling, not per-user, so an aggressive
+// interval scales badly with even a couple of concurrent visitors.
+export function useSolvencyState(pollMs = 20000) {
   const [state, setState] = useState<SolvencyState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

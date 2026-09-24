@@ -1,11 +1,23 @@
 import { createClient } from "genlayer-js";
-import { localnet, testnetBradbury } from "genlayer-js/chains";
+import { localnet, testnetBradbury, studioDevnet } from "genlayer-js/chains";
 
 type GenLayerClient = ReturnType<typeof createClient>;
 
-const CHAIN_NAME = process.env.NEXT_PUBLIC_GENLAYER_CHAIN ?? "bradbury";
+// Studio Next requires genlayer-js v2's explicit fees API (see
+// estimateAndAttachFees below) - it has no automatic fee estimation the way
+// Bradbury (v1) did. This app targets Studio Next by default.
+const CHAIN_NAME = process.env.NEXT_PUBLIC_GENLAYER_CHAIN ?? "studionext";
 
-export const chain = CHAIN_NAME === "localnet" ? localnet : testnetBradbury;
+export const chain =
+  CHAIN_NAME === "localnet" ? localnet : CHAIN_NAME === "bradbury" ? testnetBradbury : studioDevnet;
+
+// Studio Next's writeContract/deployContract calls fail with
+// "FeesDistributionMissing" unless fees are computed and attached
+// explicitly - confirmed directly against the live network, not from docs.
+export async function estimateAndAttachFees(client: GenLayerClient) {
+  const fees = await (client as any).estimateTransactionFees({});
+  return { distribution: fees.distribution, feeValue: fees.feeValue };
+}
 
 export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "";
 

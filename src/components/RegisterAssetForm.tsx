@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { CONTRACT_ADDRESS, getWriteClient } from "@/lib/genlayer";
+import { CONTRACT_ADDRESS, getWriteClient, estimateAndAttachFees } from "@/lib/genlayer";
 import { useWallet } from "@/lib/useWallet";
 import { pollTransaction, STATUS_COPY, describeFailure, type Progress } from "@/lib/pollTransaction";
 import { Button, Field, inputClass } from "@/components/ui";
@@ -64,11 +64,13 @@ export default function RegisterAssetForm({ onSettled }: { onSettled: () => void
     cancelledRef.current = false;
     try {
       const client = getWriteClient(account);
+      const fees = await estimateAndAttachFees(client);
       const txHash = await client.writeContract({
         address: CONTRACT_ADDRESS as `0x${string}`,
         functionName: "register_asset",
         args: [id, name.trim(), urls, Math.round(threshold * 10000), standard.trim()],
         value: 0n,
+        fees,
       });
       setStage("waiting");
       const tx = await pollTransaction(client, txHash, "ACCEPTED", setProgress, () => cancelledRef.current);

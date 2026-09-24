@@ -65,9 +65,9 @@ export async function pollTransaction(
         const statusNum = String(tx.status);
         onUpdate({
           statusName: STATUS_NAMES[statusNum] ?? statusNum,
-          validators: tx.lastRound?.roundValidators ?? [],
-          votes: tx.lastRound?.validatorVotesName ?? [],
-          leader: tx.lastLeader ?? null,
+          validators: tx.last_round?.round_validators ?? [],
+          votes: tx.last_round?.validator_votes_name ?? [],
+          leader: tx.last_leader ?? null,
         });
         if (statusNum === targetNum || (target === "ACCEPTED" && DECIDED.has(statusNum))) {
           return tx;

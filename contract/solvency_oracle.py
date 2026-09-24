@@ -1,10 +1,13 @@
-# v0.1.0
-# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
+# v0.3.0
+# { "Depends": "py-genlayer:5jycge4q8k23462jtb0b9fyey1s9qz928sz2nbrd9mg4sxqg2qng" }
 
 # SolvencyOracle - a reusable proof-of-reserves attestation primitive.
-# Header must end in a blank line (real GenVM v0.2.11 requirement).
+# Header must end in a blank line (real GenVM requirement).
 
-from genlayer import *
+import genlayer as gl
+from genlayer.types import *
+from genlayer.storage import TreeMap, DynArray
+from dataclasses import dataclass
 import datetime
 import hashlib
 import json
@@ -20,7 +23,7 @@ MAX_TOLERANCE_BPS = u32(2000)     # 20% - same cap and reasoning as the sibling 
 
 
 def _now() -> datetime.datetime:
-    return datetime.datetime.fromisoformat(gl.message_raw['datetime'])
+    return datetime.datetime.fromisoformat(gl.message.datetime)
 
 
 def _fetch_and_extract(source_urls: list[str]) -> str:
@@ -119,7 +122,8 @@ def _readings_agree(leader_json: str, mine_json: str, tolerance_bps: int, thresh
     return True
 
 
-@allow_storage
+@gl.storage.allow
+@dataclass
 class Asset:
     name: str
     source_urls_json: str
@@ -129,7 +133,8 @@ class Asset:
     registered_at: datetime.datetime
 
 
-@allow_storage
+@gl.storage.allow
+@dataclass
 class Attestation:
     asset_id: str
     reserves_bps: u256
@@ -142,7 +147,7 @@ class Attestation:
     attested_at: datetime.datetime
 
 
-class SolvencyOracle(gl.Contract):
+class SolvencyOracle(gl.contract.Contract):
     assets: TreeMap[str, Asset]
     attestations: DynArray[Attestation]
 

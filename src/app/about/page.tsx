@@ -57,6 +57,28 @@ export default function About() {
         </p>
       </Card>
 
+      <Card title="What multiple sources actually prove">
+        <p className="text-sm leading-relaxed text-[color:var(--foreground)]">
+          An asset can register up to three source pages. They are <em>not</em> extracted separately and compared
+          against each other - every validator concatenates all of an asset&apos;s pages into one evidence set and
+          runs a single extraction against the combined text. What multiple sources buy is a broader evidence base
+          for that one extraction, and on-chain proof (a hash per page) that every page was genuinely fetched - not
+          that the pages agreed with each other. The real cross-checking here is validator-to-validator: multiple
+          independent validators each redo the same combined fetch-and-extract and must land on the same reading.
+          Detecting disagreement <em>between</em> sources would need a different design (a separate extraction and
+          agreement check per page), which this version doesn&apos;t attempt - see{" "}
+          <a
+            href="https://github.com/HarrisonJL/solvency-oracle#design-notes"
+            target="_blank"
+            rel="noreferrer"
+            className="text-[color:var(--accent)] hover:underline"
+          >
+            SolvencyOracle&apos;s README
+          </a>
+          .
+        </p>
+      </Card>
+
       <Card title="What's stored, and what isn't enforced">
         <p className="text-sm leading-relaxed text-[color:var(--foreground)]">
           The stored figure is the raw extraction, never rounded - the tolerance that verified it is stored

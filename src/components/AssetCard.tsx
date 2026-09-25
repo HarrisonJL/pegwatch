@@ -60,8 +60,8 @@ export default function AssetCard({
           {asset && (
             <>
               <p className="mt-1 text-xs text-[color:var(--muted)]">
-                Requires ≥{formatCoverage(asset.threshold_bps)} coverage · {sourceCount} independent source
-                {sourceCount === 1 ? "" : "s"} cross-checked
+                Requires ≥{formatCoverage(asset.threshold_bps)} coverage · {sourceCount} source page
+                {sourceCount === 1 ? "" : "s"} combined into one reading, verified by validator consensus
                 {asset.standard && ` · ${asset.standard}`}
               </p>
               <p className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-xs">
